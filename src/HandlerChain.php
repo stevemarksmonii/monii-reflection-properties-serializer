@@ -2,6 +2,8 @@
 
 namespace Monii\Serialization\ReflectionPropertiesSerializer;
 
+use Exception;
+
 class HandlerChain implements Handler
 {
     /**
@@ -33,13 +35,16 @@ class HandlerChain implements Handler
      */
     public function serialize($object)
     {
-        foreach ($this->serializers as $serializer) {
-            if ($serializer->canSerialize($object)) {
-                return $serializer->serialize($object);
+        try {
+            foreach ($this->serializers as $serializer) {
+                if ($serializer->canSerialize($object)) {
+                    return $serializer->serialize($object);
+                }
             }
+            throw new Exception('Serialization not possible');
+        } catch (Exception $e) {
+            var_dump($e->getMessage());
         }
-        die("SerializationNotPossible");
-        //throw new SerializationNotPossible();
     }
 
     /**
@@ -60,13 +65,16 @@ class HandlerChain implements Handler
      */
     public function deserialize($className, array $data)
     {
-        foreach ($this->serializers as $serializer) {
-            if ($serializer->canDeserialize($className)) {
-                return $serializer->deserialize($className, $data);
+        try {
+            foreach ($this->serializers as $serializer) {
+                if ($serializer->canDeserialize($className)) {
+                    return $serializer->deserialize($className, $data);
+                }
             }
+            throw new Exception('Serialization not possible');
+        } catch (Exception $e) {
+            var_dump($e->getMessage());
         }
-        die("SerializationNotPossible");
-        //throw new SerializationNotPossible();
     }
 
     public function pushSerializer($serializer)
