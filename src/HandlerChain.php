@@ -40,7 +40,7 @@ class HandlerChain implements Handler
                 return $serializer->serialize($object);
             }
         }
-        throw new SerializationNotPossible ($object->getName());
+        throw new SerializationNotPossible($object->getName());
     }
 
     /**
