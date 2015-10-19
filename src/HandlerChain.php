@@ -35,16 +35,12 @@ class HandlerChain implements Handler
      */
     public function serialize($object)
     {
-        try {
-            foreach ($this->serializers as $serializer) {
-                if ($serializer->canSerialize($object)) {
-                    return $serializer->serialize($object);
-                }
+        foreach ($this->serializers as $serializer) {
+            if ($serializer->canSerialize($object)) {
+                return $serializer->serialize($object);
             }
-            throw new Exception('Serialization not possible');
-        } catch (Exception $e) {
-            var_dump($e->getMessage());
         }
+        throw new SerializationNotPossible ($object->getName());
     }
 
     /**
@@ -65,16 +61,12 @@ class HandlerChain implements Handler
      */
     public function deserialize($className, array $data)
     {
-        try {
-            foreach ($this->serializers as $serializer) {
-                if ($serializer->canDeserialize($className)) {
-                    return $serializer->deserialize($className, $data);
-                }
+        foreach ($this->serializers as $serializer) {
+            if ($serializer->canDeserialize($className)) {
+                return $serializer->deserialize($className, $data);
             }
-            throw new Exception('Serialization not possible');
-        } catch (Exception $e) {
-            var_dump($e->getMessage());
         }
+        throw new DeserializationNotPossible($className);
     }
 
     public function pushSerializer($serializer)
