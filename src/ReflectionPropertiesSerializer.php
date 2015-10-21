@@ -2,6 +2,7 @@
 
 namespace Monii\Serialization\ReflectionPropertiesSerializer;
 
+use Monii\AggregateEventStorage\Aggregate\Error\SerializationNotPossible;
 use Monii\Serialization\ReflectionPropertiesSerializer\PhpBuiltInType\PhpBuiltInTypeHandler;
 
 class ReflectionPropertiesSerializer
@@ -58,10 +59,30 @@ class ReflectionPropertiesSerializer
             }
 
             if ($property->isArray() && $property->isObject()) {
-                $data[$reflectionProperty->getName()] = array_map(function ($value) {
+                $data[$reflectionProperty->getName()] = array_map(function ($value) use ($reflectionClass, $reflectionProperty, $property) {
+                    if (!is_object($value)) {
+                        $message = sprintf(
+                            'While serializing %s, expected property %s to be %s, found %s instead.',
+                            $reflectionClass->getName(),
+                            $reflectionProperty->getName(),
+                            $property->getType(),
+                            $value
+                        );
+                        throw new SerializationNotPossible($message);
+                    }
                     return $this->serialize($value);
                 }, $value);
             } elseif ($property->getType()) {
+                if (!is_object($value)) {
+                    $message = sprintf(
+                        'While serializing %s, expected property %s to be %s, found %s instead.',
+                        $reflectionClass->getName(),
+                        $reflectionProperty->getName(),
+                        $property->getType(),
+                        $value
+                    );
+                    throw new SerializationNotPossible($message);
+                }
                 $data[$reflectionProperty->getName()] = $this->serialize($value);
             } else {
                 $data[$reflectionProperty->getName()] = $value;
